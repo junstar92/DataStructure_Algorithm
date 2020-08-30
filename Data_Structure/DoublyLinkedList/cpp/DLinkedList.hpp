@@ -7,7 +7,7 @@ DLinkedList<T>::~DLinkedList()
 }
 
 template<typename T>
-void DLinkedList<T>::addFront(const T data)
+void DLinkedList<T>::addFront(const T& data)
 {
 	if (empty())
 	{
@@ -32,11 +32,13 @@ void DLinkedList<T>::removeFront()
 		DNode<T>* delNode = head;
 
 		head = head->next;
-		head->prev = nullptr;
-
+		
 		delete delNode;
 
 		--count;
+
+		if (count != 0)
+			head->prev = nullptr;
 	}
 	catch (ListEmpty e) {
 		std::cout << "List is empty" << std::endl;
@@ -45,7 +47,7 @@ void DLinkedList<T>::removeFront()
 }
 
 template<typename T>
-void DLinkedList<T>::addRear(const T data)
+void DLinkedList<T>::addRear(const T& data)
 {
 	if (empty())
 	{
@@ -69,11 +71,13 @@ void DLinkedList<T>::removeRear()
 		DNode<T>* delNode = tail;
 
 		tail = tail->prev;
-		tail->next = nullptr;
 
 		delete delNode;
 
 		--count;
+
+		if (count != 0)
+			tail->next = nullptr;
 	}
 	catch (ListEmpty e) {
 		std::cout << "List is empty" << std::endl;
@@ -82,7 +86,7 @@ void DLinkedList<T>::removeRear()
 }
 
 template<typename T>
-void DLinkedList<T>::insert(const T data, int k)
+void DLinkedList<T>::insert(const T& data, int k)
 {
 	try {
 		if (k > count || k < 0) throw InvalidIndex();
@@ -153,7 +157,7 @@ void DLinkedList<T>::erase(int k)
 }
 
 template<typename T>
-int DLinkedList<T>::search(const T data)
+int DLinkedList<T>::search(const T& data)
 {
 	DNode<T>* curNode = head;
 	for (int i = 0; i < count; i++)
@@ -174,7 +178,7 @@ bool DLinkedList<T>::empty() const
 }
 
 template<typename T>
-T DLinkedList<T>::front() const
+T& DLinkedList<T>::front() const
 {
 	try {
 		if (empty()) throw ListEmpty();

@@ -18,18 +18,18 @@ public:
 	DLinkedList() : count(0), head(nullptr), tail(nullptr) {}
 	~DLinkedList();
 
-	void addFront(const T data);
+	void addFront(const T& data);
 	void removeFront();
-	void addRear(const T data);
+	void addRear(const T& data);
 	void removeRear();
 
-	void insert(const T data, int k);
+	void insert(const T& data, int k);
 	void erase(int k);
 
-	int search(const T data);
+	int search(const T& data);
 	bool empty() const;
 
-	T front() const;
+	T& front() const;
 
 	DNode<T>* head;
 	DNode<T>* tail;
