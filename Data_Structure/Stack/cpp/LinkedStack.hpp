@@ -50,5 +50,5 @@ void LinkedStack<T>::pop()
 template<typename T>
 void LinkedStack<T>::print()
 {
-	std::cout << DLink;
+	std::cout << "top " << DLink;
 }
