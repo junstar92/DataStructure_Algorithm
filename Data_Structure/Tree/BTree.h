@@ -1,4 +1,4 @@
-/* BTree.h */
+/* BTree.h : Binary Tree */
 #ifndef BTREE_H
 #define BTREE_H
 #include <queue>
