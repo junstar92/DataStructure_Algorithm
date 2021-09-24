@@ -10,8 +10,10 @@ AES::AES(size_t keyBits, MODE mode) : Nkey_(keyBits / 32), Nround_(6 + this->Nke
 {
 	assert(keyBits == 128 || keyBits == 192 || keyBits == 256);
 
-	this->iv_.assign(this->Nstate_, 0);
-	this->setIV(time(NULL));
+	if (mode == MODE::CBC) {
+		this->iv_.assign(this->Nstate_, 0);
+		this->setIV(time(NULL));
+	}
 }
 
 std::vector<byte> AES::_createState(const std::vector<byte>& block, uint32_t start)
@@ -413,9 +415,9 @@ std::string AES::encryption(const std::string& input, const std::string& cipherK
 {
 	assert(cipherKey.size() == this->Nkey_ * 4 * 2); // check cipherKey(str) size == 128 / 192 / 256 bits * 2
 
-	uint32_t num_state = input.length() / (this->Nstate_ * 2);
+	uint32_t block_size = input.length() / (this->Nstate_ * 2);
 	if (input.length() % (this->Nstate_ * 2) != 0)
-		num_state += 1;
+		block_size += 1;
 
 	std::string cipherText = "";
 	std::vector<byte> plainText = this->_convertTypeStrToByteBlock(input);
@@ -426,7 +428,7 @@ std::string AES::encryption(const std::string& input, const std::string& cipherK
 		this->phiv_ = this->iv_;
 	}
 
-	for (uint32_t i = 0; i < num_state; i++) {
+	for (uint32_t i = 0; i < block_size; i++) {
 		std::vector<byte> state = this->_createState(plainText, i * this->Nstate_);
 
 		if (this->mode_ == MODE::CBC) {
@@ -459,7 +461,9 @@ std::string AES::encryption(const std::string& input, const std::string& cipherK
 
 std::string AES::decryption(const std::string& input, const std::string& cipherKey, bool verbose)
 {
-	uint32_t num_state = input.length() / (this->Nstate_ * 2);
+	assert(cipherKey.size() == this->Nkey_ * 4 * 2); // check cipherKey(str) size == 128 / 192 / 256 bits * 2
+
+	uint32_t block_size = input.length() / (this->Nstate_ * 2);
 
 	std::string plainText = "";
 	std::vector<byte> cipherText = this->_convertTypeStrToByteBlock(input);
@@ -470,7 +474,7 @@ std::string AES::decryption(const std::string& input, const std::string& cipherK
 		this->phiv_ = this->iv_;
 	}
 
-	for (uint32_t i = 0; i < num_state; i++) {
+	for (uint32_t i = 0; i < block_size; i++) {
 		std::vector<byte> state = this->_createState(cipherText, i * this->Nstate_);
 		std::vector<byte> tmp;
 
