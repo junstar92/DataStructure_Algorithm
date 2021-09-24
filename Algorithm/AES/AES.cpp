@@ -392,6 +392,7 @@ void AES::_printState(const std::vector<byte>& state)
 
 void AES::setIV(uint32_t seed)
 {
+	assert(this->mode_ == MODE::CBC);
 	srand(seed);
 
 	for (uint8_t i = 0; i < this->Nstate_; i++)
@@ -400,6 +401,7 @@ void AES::setIV(uint32_t seed)
 
 void AES::setIV(std::vector<byte> iv)
 {
+	assert(this->mode_ == MODE::CBC);
 	assert(iv.size() == 16);
 
 	for (uint8_t i = 0; i < this->Nstate_; i++)
