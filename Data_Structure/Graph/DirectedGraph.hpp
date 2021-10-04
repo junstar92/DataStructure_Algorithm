@@ -3,6 +3,9 @@
 
 #include <iostream>
 #include <functional>
+#include <list>
+#include <map>
+#include <queue>
 
 template <typename T>
 class DirectedGraph {
@@ -27,6 +30,8 @@ private:
 	VERTEX* first;
 	std::function<int(T, T)> compare;
 
+	void _topologicalSort_DFS(const VERTEX* curVertex, std::map<T, bool>& visited, std::list<T>& sorted);
+
 public:
 	DirectedGraph(std::function<int(const T&, const T&)> func) : count(0), first(nullptr), compare(func) {};
 	~DirectedGraph();
@@ -36,11 +41,11 @@ public:
 	int insertArc(T fromKey, T toKey);
 	int deleteArc(T fromKey, T toKey);
 
-	int graphCount() const {
-		return this->count;
-	}
-
+	int graphCount() const { return this->count; }
 	void printVertex() const;
+
+	std::list<T> topologicalSort_DFS();
+	std::list<T> topologicalSort_Q();
 };
 
 template<typename T>
@@ -278,6 +283,86 @@ void DirectedGraph<T>::printVertex() const
 		std::cout << "\n";
 		walkPtr = walkPtr->pNextVertex;
 	}
+}
+
+template <typename T>
+void DirectedGraph<T>::_topologicalSort_DFS(const VERTEX* curVertex, std::map<T, bool>& visited, std::list<T>& sorted)
+{
+	visited[curVertex->data] = true;
+
+	const ARC* walkArcPtr = curVertex->pArc;
+	while (walkArcPtr) {
+		if (!visited[walkArcPtr->destination->data]) {
+			this->_topologicalSort_DFS(walkArcPtr->destination, visited, sorted);
+		}
+		walkArcPtr = walkArcPtr->pNextArc;
+	}
+
+	sorted.push_front(curVertex->data);
+}
+
+template <typename T>
+std::list<T> DirectedGraph<T>::topologicalSort_DFS()
+{
+	std::map<T, bool> visited;
+	
+	const VERTEX* walkPtr = this->first;
+	while (walkPtr) {	// visited initiation
+		visited[walkPtr->data] = false;
+		walkPtr = walkPtr->pNextVertex;
+	}
+
+	std::list<T> sorted;
+	walkPtr = this->first;
+	while (walkPtr) {
+		if (!visited[walkPtr->data])
+			this->_topologicalSort_DFS(walkPtr, visited, sorted);
+		walkPtr = walkPtr->pNextVertex;
+	}
+
+	return sorted;
+}
+
+template <typename T>
+std::list<T> DirectedGraph<T>::topologicalSort_Q()
+{
+	std::map<T, uint32_t> inDegrees;
+	std::queue<const VERTEX*> q;
+
+	const VERTEX* walkPtr = this->first;
+	while (walkPtr) {	// inDegrees initiation
+		inDegrees[walkPtr->data] = walkPtr->inDegree;
+
+		if (walkPtr->inDegree == 0)
+			q.push(walkPtr);
+
+		walkPtr = walkPtr->pNextVertex;
+	}
+
+	std::list<T> sorted;
+	for (int i = 0; i < this->count; i++) {
+		if (q.empty()) {
+			std::cout << "Failed to sort\n";
+			sorted.clear();
+			return sorted;
+		}
+
+		const VERTEX* curPtr = q.front();
+		q.pop();
+		sorted.push_back(curPtr->data);
+		std::cout << curPtr->data << "\n";
+
+		const ARC* walkArcPtr = curPtr->pArc;
+		while (walkArcPtr) {	// search adj vertex
+			inDegrees[walkArcPtr->destination->data]--;
+			if (inDegrees[walkArcPtr->destination->data] == 0)
+				q.push(walkArcPtr->destination);
+
+			walkArcPtr = walkArcPtr->pNextArc;
+		}
+	}
+
+	return sorted;
 }
 
 #endif
