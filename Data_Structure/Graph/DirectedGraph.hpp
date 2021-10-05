@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <queue>
+#include <tuple>
 
 template <typename T>
 class DirectedGraph {
@@ -23,6 +24,7 @@ public:
 	typedef struct arc {
 		struct vertex* destination;
 		struct arc* pNextArc;
+		int32_t weight;
 	} ARC;
 
 private:
@@ -38,7 +40,7 @@ public:
 
 	void insertVertex(T data);
 	int deleteVertex(T delKey);
-	int insertArc(T fromKey, T toKey);
+	int insertArc(T fromKey, T toKey, int32_t weight = 0);
 	int deleteArc(T fromKey, T toKey);
 
 	int graphCount() const { return this->count; }
@@ -46,6 +48,8 @@ public:
 
 	std::list<T> topologicalSort_DFS();
 	std::list<T> topologicalSort_Q();
+
+	std::tuple<std::map<T, T>, std::map<T, int32_t>> criticalPath(T start);
 };
 
 template<typename T>
@@ -155,7 +159,7 @@ int DirectedGraph<T>::deleteVertex(T delKey)
 }
 
 template <typename T>
-int DirectedGraph<T>::insertArc(T fromKey, T toKey)
+int DirectedGraph<T>::insertArc(T fromKey, T toKey, int32_t weight)
 {
 	ARC* newPtr;
 	VERTEX* vertFromPtr;
@@ -165,6 +169,9 @@ int DirectedGraph<T>::insertArc(T fromKey, T toKey)
 	if (!newPtr) { // failed to alloc
 		return -1;
 	}
+
+	// set weight
+	newPtr->weight = weight;
 
 	// find fromKey
 	vertFromPtr = this->first;
@@ -363,6 +370,43 @@ std::list<T> DirectedGraph<T>::topologicalSort_Q()
 	}
 
 	return sorted;
+}
+
+template <typename T>
+std::tuple<std::map<T, T>, std::map<T, int32_t>> DirectedGraph<T>::criticalPath(T start)
+{
+	std::map<T, int32_t> pred;
+	std::map<T, int32_t> dist;
+	std::map<T, VERTEX*> vertices;
+
+	VERTEX* walkVertPtr = this->first;
+	// dist, pred initiation, set vertex mapping table
+	while (walkVertPtr) {
+		dist[walkVertPtr->data] = (1 << 32);
+		pred[walkVertPtr->data] = -1;
+		vertices[walkVertPtr->data] = walkVertPtr;
+
+		walkVertPtr = walkVertPtr->pNextVertex;
+	}
+
+	dist[start] = 0;
+	auto sorted = this->topologicalSort_DFS();
+
+	for (auto& u : sorted) {
+		ARC* walkArcPtr = vertices[u]->pArc;
+
+		while (walkArcPtr) {
+			T v = walkArcPtr->destination->data;
+			if (dist[v] < dist[u] + walkArcPtr->weight) {
+				dist[v] = dist[u] + walkArcPtr->weight;
+				pred[v] = u;
+			}
+
+			walkArcPtr = walkArcPtr->pNextArc;
+		}
+	}
+	
+	return { pred, dist };
 }
 
 #endif
