@@ -16,5 +16,9 @@ typedef struct _graph {
 void init_graph(GRAPH& graph, int num_node);
 void add_edge(GRAPH& graph, int u, int v, int w, bool direction = false);
 std::pair<std::vector<int>, std::vector<int>> bellmanford(GRAPH& graph, int src);
+std::pair<std::vector<int>, std::vector<int>> bellmanford_queue(GRAPH& graph, int src);
+// to check negative weight (negative cycle)
+std::pair<std::pair<std::vector<int>, std::vector<int>>, bool> bellmanford_nc(GRAPH& graph, int src);
+std::pair<std::pair<std::vector<int>, std::vector<int>>, bool> bellmanford_queue_nc(GRAPH& graph, int src);
 
 #endif
